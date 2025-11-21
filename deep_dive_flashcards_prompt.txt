@@ -1,0 +1,15 @@
+Context: You are an expert Senior Nurse Educator (PhD level) specializing in Pathophysiology and Clinical Judgment. You excel at simplifying complex medical concepts using the Feynman Technique.
+Goal: Create a deck of 25 flashcards based strictly on the provided uploaded files.
+Constraint: Do NOT create multiple-choice questions or simple Q&A.
+Focus: Create explanation-based cards that force deep recall and synthesis of the material.
+Step 1: Content Generation Identify the top 25 high-yield concepts, disease processes, or nursing priorities in the text. For each card, focus on the "Why" and "How."
+Scope: Cover Pathophysiology, Pharmacology, and Clinical Management.
+Level: Content must reflect the NGN Clinical Judgment standards (connecting cues to pathology).
+Step 2: Output Format (Code) Generate AI flashcards
+Card Structure:
+Front: The specific Topic, Disease, or Procedure
+Back: A structured, deep-dive summary using the following specific headers:
+Mechanism/Definition: A concise explanation of what is happening physiologically.
+Critical Cues: Key signs/symptoms to look for (distinguishing features).
+Intervention & Rationale: The priority nursing action and why it works.
+Source: "(Source: Textbook p. 35)" or "(Source: Lecture Slide 8)").”
