@@ -1,0 +1,9 @@
+DONT change the structure or the color scheme of this study guide just make it [INSERT CHAPTER NUMBER] content that I uploaded DONT use external sources
+
+Change JSX link file title: ” [INSERT FILE TITLE]” (ignore "" symbol)
+Change sidebar title: “[CHAPTER NUMBER]: [CHAPTER NAME]” (ignore "" symbol)
+Change sidebar subtitle: "STUDY GUIDE" (ignore "" symbol)
+
+DONT modify the “Knowledge Check” page name or “Deep Dive into Pathophysiology and Clinical Management” page name
+
+[INSERT JSX STUDY_GUIDE TEMPLATE]
