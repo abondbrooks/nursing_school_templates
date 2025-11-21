@@ -1,0 +1,1769 @@
+Context: You are an expert NCLEX Curriculum Developer and Senior Nurse Educator (PhD level). You specialize in Item Analysis and Clinical Judgment Measurement.
+Goal: Create a comprehensive, interactive Chapter Review Quiz based strictly on the provided uploaded files.
+Step 1: Content Generation (The Questions) Analyze the "Outline" and "Objectives" of the uploaded files. Create 25 NCLEX-style questions (randomize type and amount, e.g. 20 Multiple Choice, 5 Select-All-That-Apply).
+Question Criteria:
+Clinical Judgment: Focus on application/analysis (Bloom's Taxonomy). Avoid simple recall. Use the NGN Clinical Judgment Measurement Model (recognize cues, prioritize hypotheses).
+Prioritization: Use frameworks: ABCs, Maslow’s, Acute vs. Chronic, Stable vs. Unstable.
+Distractors: Incorrect options must be plausible.
+Source of Truth: Every fact must be traceable to the provided text.
+Step 2: The Output (The Code) You will generate a single HTML file containing the quiz.
+Method: Do not write hard-coded HTML for every question. Instead, create a Javascript Array of Objects named const quizData = [...] containing all 25 questions, options, correct answers, and rationales.
+Injection: Insert this array into the provided HTML/JS template structure.
+Design: Keep the CSS/Styling exactly as provided in my template.
+Data Structure for Rationales: For each question object, include:
+question: The scenario.
+options: Array of strings.
+correct: The index/indices of the correct answer.
+rationale: A detailed explanation. Must include a citation (e.g., "(Source: Textbook p. 35)" or "(Source: Lecture Slide 8)").
+tip: A test-taking strategy (e.g., "Note the keyword 'sudden' indicating instability").
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chapter 14 NCLEX Review: The Heart</title>
+
+    <style>
+
+        :root {
+
+            --primary: #2c3e50;
+
+            --secondary: #3498db;
+
+            --accent: #27ae60;
+
+            --danger: #e74c3c;
+
+            --light: #ecf0f1;
+
+            --dark: #2c3e50;
+
+        }
+
+        body {
+
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+            background-color: #f4f7f9;
+
+            color: #333;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: flex-start;
+
+            min-height: 100vh;
+
+            padding: 20px;
+
+            margin: 0;
+
+        }
+
+        #quiz-container {
+
+            background-color: #ffffff;
+
+            border-radius: 12px;
+
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+            width: 100%;
+
+            max-width: 800px;
+
+            overflow: hidden;
+
+            margin-top: 20px;
+
+            margin-bottom: 40px;
+
+        }
+
+        #quiz-header {
+
+            background-color: var(--primary);
+
+            color: white;
+
+            padding: 20px 30px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+        #progress-bar {
+
+            width: 100%;
+
+            height: 6px;
+
+            background-color: #ddd;
+
+        }
+
+        #progress-fill {
+
+            height: 100%;
+
+            background-color: var(--accent);
+
+            width: 0%;
+
+            transition: width 0.3s ease;
+
+        }
+
+        #question-area {
+
+            padding: 30px;
+
+        }
+
+        #question-counter {
+
+            font-size: 0.9rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            color: #7f8c8d;
+
+            margin-bottom: 10px;
+
+            font-weight: 700;
+
+        }
+
+        #question-text {
+
+            font-size: 1.25rem;
+
+            font-weight: 600;
+
+            line-height: 1.5;
+
+            margin-bottom: 25px;
+
+            color: var(--dark);
+
+        }
+
+        .sata-instruction {
+
+            font-size: 0.9rem;
+
+            color: var(--danger);
+
+            font-weight: bold;
+
+            margin-bottom: 15px;
+
+            display: block;
+
+            background-color: #fff3cd;
+
+            padding: 5px 10px;
+
+            border-radius: 4px;
+
+            display: inline-block;
+
+        }
+
+        .option-item {
+
+            margin-bottom: 12px;
+
+            position: relative;
+
+        }
+
+        .option-label {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            padding: 15px 20px;
+
+            border: 2px solid #e0e0e0;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            transition: all 0.2s ease;
+
+        }
+
+        .option-label:hover {
+
+            background-color: #f8f9fa;
+
+            border-color: #bdc3c7;
+
+        }
+
+        .option-label.selected {
+
+            background-color: #ebf5fb;
+
+            border-color: var(--secondary);
+
+        }
+
+        .option-label.correct-answer {
+
+            background-color: #d4edda;
+
+            border-color: #28a745;
+
+        }
+
+        .option-label.wrong-answer {
+
+            background-color: #f8d7da;
+
+            border-color: #dc3545;
+
+        }
+
+        .option-label.missed-answer {
+
+            border-color: #28a745;
+
+            background-color: #fff;
+
+            border-style: dashed;
+
+        }
+
+        /* Custom Radio/Checkbox styling */
+
+        input[type="radio"], input[type="checkbox"] {
+
+            margin-right: 15px;
+
+            margin-top: 4px;
+
+            transform: scale(1.2);
+
+            cursor: pointer;
+
+        }
+
+        #feedback {
+
+            padding: 25px 30px;
+
+            background-color: #f8f9fa;
+
+            border-top: 1px solid #e0e0e0;
+
+        }
+
+        #feedback-title {
+
+            margin: 0 0 10px 0;
+
+            font-size: 1.1rem;
+
+            font-weight: 700;
+
+        }
+
+        .feedback-correct { color: var(--accent); }
+
+        .feedback-incorrect { color: var(--danger); }
+
+        #feedback-rationale {
+
+            font-size: 0.95rem;
+
+            line-height: 1.6;
+
+            color: #555;
+
+        }
+
+        #feedback-source {
+
+            margin-top: 10px;
+
+            font-size: 0.85rem;
+
+            font-style: italic;
+
+            color: #7f8c8d;
+
+            display: block;
+
+        }
+
+        .test-tip {
+
+            margin-top: 10px;
+
+            font-size: 0.9rem;
+
+            color: var(--secondary);
+
+            font-weight: 600;
+
+            background-color: #e8f4fc;
+
+            padding: 10px;
+
+            border-radius: 6px;
+
+            border-left: 4px solid var(--secondary);
+
+        }
+
+        #navigation {
+
+            padding: 20px 30px;
+
+            background-color: #fff;
+
+            border-top: 1px solid #e0e0e0;
+
+            text-align: right;
+
+        }
+
+        button {
+
+            font-size: 1rem;
+
+            font-weight: 600;
+
+            padding: 12px 30px;
+
+            border: none;
+
+            border-radius: 30px;
+
+            cursor: pointer;
+
+            transition: transform 0.1s, box-shadow 0.2s;
+
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        }
+
+        button:active {
+
+            transform: translateY(1px);
+
+            box-shadow: none;
+
+        }
+
+        #submit-btn {
+
+            background-color: var(--secondary);
+
+            color: white;
+
+        }
+
+        #submit-btn:disabled {
+
+            background-color: #95a5a6;
+
+            cursor: not-allowed;
+
+            box-shadow: none;
+
+        }
+
+        #next-btn {
+
+            background-color: var(--accent);
+
+            color: white;
+
+        }
+
+        #results-container {
+
+            text-align: center;
+
+            padding: 50px;
+
+        }
+
+        #score-circle {
+
+            width: 150px;
+
+            height: 150px;
+
+            background-color: var(--primary);
+
+            color: white;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            font-size: 2.5rem;
+
+            font-weight: bold;
+
+            margin: 0 auto 30px;
+
+        }
+
+        .action-btn {
+
+            margin: 10px;
+
+            background-color: var(--dark);
+
+            color: white;
+
+        }
+
+        .hidden { display: none !important; }
+
+        
+
+        /* Responsive Adjustments */
+
+        @media (max-width: 600px) {
+
+            #quiz-container { margin: 0; border-radius: 0; height: 100vh; display: flex; flex-direction: column; }
+
+            #question-area { flex-grow: 1; overflow-y: auto; }
+
+            #navigation { position: sticky; bottom: 0; }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="quiz-container">
+
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+
+        <div id="quiz-header">
+
+            <span>NSG Chapter 14: Heart & Heart Disease</span>
+
+        </div>
+
+        <div id="question-area">
+
+            <div id="question-counter"></div>
+
+            <div id="question-text"></div>
+
+            <div id="options-container"></div>
+
+        </div>
+
+        <div id="feedback" class="hidden">
+
+            <h4 id="feedback-title"></h4>
+
+            <p id="feedback-rationale"></p>
+
+            <div id="test-tip-container"></div>
+
+            <span id="feedback-source"></span>
+
+        </div>
+
+        <div id="navigation">
+
+            <button id="submit-btn" disabled>Submit Answer</button>
+
+            <button id="next-btn" class="hidden">Next Question</button>
+
+        </div>
+
+        <div id="results-container" class="hidden">
+
+            <h2>Exam Completed</h2>
+
+            <div id="score-circle">0%</div>
+
+            <p id="result-message"></p>
+
+            <button id="retake-all-btn" class="action-btn">Retake Full Exam</button>
+
+            <button id="retake-missed-btn" class="action-btn">Retake Missed Questions</button>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        const quizData = [
+
+            {
+
+                id: 1,
+
+                type: 'single',
+
+                question: "A nurse is performing a cardiac assessment. To auscultate the apical pulse, where should the nurse place the stethoscope?",
+
+                options: [
+
+                    "Second intercostal space, right sternal border",
+
+                    "Fifth intercostal space, left midclavicular line",
+
+                    "Fourth intercostal space, left sternal border",
+
+                    "Center of the sternum over the xiphoid process"
+
+                ],
+
+                answer: 1,
+
+                rationale: "The apex of the heart, or the blunt point of the lower edge, lies on the diaphragm pointing toward the left. The apical heartbeat is best heard in the space between the fifth and sixth ribs on a line even with the midpoint of the left clavicle.",
+
+                source: "Chapter 14 Textbook, p. 380; Chapter 14 Slides, Slide 3",
+
+                tip: "Remember '5th and Mid' for the Apical pulse. Anatomical landmarks are critical for accurate assessment."
+
+            },
+
+            {
+
+                id: 2,
+
+                type: 'multi',
+
+                question: "A patient is admitted with a diagnosis of left-sided heart failure (congestive heart failure). Which clinical manifestations would the nurse expect to assess? (Select All That Apply)",
+
+                options: [
+
+                    "Jugular vein distention",
+
+                    "Dyspnea and shortness of breath",
+
+                    "Pulmonary crackles",
+
+                    "Peripheral edema in the legs",
+
+                    "Pink, frothy sputum (pulmonary edema)"
+
+                ],
+
+                answer: [1, 2, 4], // Note: Peripheral edema is typically right sided, but let's check text. Text says Left HF leads to congestion of pulmonary circulation. Right HF causes peripheral edema. So 1 and 3 are Right, 2 and 4 are Left. Wait, looking at text: "Left heart failure... results in congestion of the pulmonary circulation... pulmonary edema." Right heart failure results in "jugular vein distention, peripheral edema, ascites." Let's correct the indices.
+
+                // Correct indices based on text: 1 (Dyspnea), 2 (Crackles), 4 (Pink sputum). 0 and 3 are Right sided.
+
+                // Re-mapping indices: 0=JVD (Right), 1=Dyspnea (Left), 2=Crackles (Left), 3=Peripheral Edema (Right), 4=Pink sputum (Left).
+
+                // Correct Answer indices: 1, 2, 4.
+
+                answer: [1, 2, 4],
+
+                rationale: "Left-sided heart failure causes blood to back up into the pulmonary circulation, leading to pulmonary congestion. Signs include shortness of breath (dyspnea), crackles in the lungs, and pulmonary edema. Jugular vein distention and peripheral edema are signs of Right-sided heart failure.",
+
+                source: "Chapter 14 Textbook, p. 395; Chapter 14 Slides, Slide 32",
+
+                tip: "Think 'L' for Left and 'L' for Lungs. Left-sided failure symptoms are respiratory."
+
+            },
+
+            {
+
+                id: 3,
+
+                type: 'single',
+
+                question: "The nurse is explaining the conduction system of the heart to a patient scheduled for a pacemaker insertion. The nurse correctly identifies which structure as the 'pacemaker' of the heart?",
+
+                options: [
+
+                    "Atrioventricular (AV) Node",
+
+                    "Bundle of His",
+
+                    "Purkinje Fibers",
+
+                    "Sinoatrial (SA) Node"
+
+                ],
+
+                answer: 3,
+
+                rationale: "Impulse conduction normally starts as a spontaneous action potential in the heart's pacemaker, the Sinoatrial (SA) node. It is located in the wall of the right atrium.",
+
+                source: "Chapter 14 Textbook, p. 388; Chapter 14 Slides, Slide 21",
+
+                tip: "The SA node starts the Signal."
+
+            },
+
+            {
+
+                id: 4,
+
+                type: 'single',
+
+                question: "A patient asks the nurse what causes the 'lub-dup' sounds heard during a heart exam. The nurse explains that the first heart sound ('lub') is caused by:",
+
+                options: [
+
+                    "The closing of the semilunar valves",
+
+                    "The vibration and closure of the AV valves during ventricular contraction",
+
+                    "The flow of blood into the atria",
+
+                    "The contraction of the papillary muscles"
+
+                ],
+
+                answer: 1,
+
+                rationale: "The first sound (lub) is caused by the vibration and abrupt closure of the atrioventricular (AV) valves as the ventricles contract. The second sound (dup) is caused by the closing of the semilunar valves.",
+
+                source: "Chapter 14 Textbook, p. 384; Chapter 14 Slides, Slide 13",
+
+                tip: "AV valves close first (Lub), then Semilunar valves close (Dup). Systole starts with the Lub."
+
+            },
+
+            {
+
+                id: 5,
+
+                type: 'single',
+
+                question: "A patient is diagnosed with mitral valve prolapse (MVP). The nurse understands that this condition involves a defect in the valve located between which two chambers?",
+
+                options: [
+
+                    "Right Atrium and Right Ventricle",
+
+                    "Left Atrium and Left Ventricle",
+
+                    "Right Ventricle and Pulmonary Artery",
+
+                    "Left Ventricle and Aorta"
+
+                ],
+
+                answer: 1,
+
+                rationale: "The mitral valve (also known as the bicuspid valve) is the left AV valve, located between the Left Atrium and Left Ventricle. MVP occurs when the valve flaps extend back into the left atrium during contraction.",
+
+                source: "Chapter 14 Textbook, p. 383; Chapter 14 Slides, Slide 10",
+
+                tip: "Try the mnemonic: 'Try to be Right' (Tricuspid is Right) and 'Mitral is mighty' (Left side pumps to the body)."
+
+            },
+
+            {
+
+                id: 6,
+
+                type: 'multi',
+
+                question: "Which of the following statements accurately describe the flow of blood through the heart? (Select All That Apply)",
+
+                options: [
+
+                    "Blood enters the right atrium through the superior and inferior vena cavae.",
+
+                    "Blood flows from the right ventricle through the mitral valve.",
+
+                    "Oxygen-rich blood returns to the left atrium via the pulmonary veins.",
+
+                    "Blood leaves the left ventricle through the aortic semilunar valve.",
+
+                    "Pulmonary arteries carry oxygen-rich blood to the body."
+
+                ],
+
+                answer: [0, 2, 3],
+
+                rationale: "Blood enters the Right Atrium via the Vena Cavae. It goes to the Right Ventricle through the Tricuspid (not mitral) valve. Oxygen-rich blood returns from the lungs to the Left Atrium via Pulmonary Veins. The Left Ventricle pumps blood through the Aortic valve. Pulmonary arteries carry oxygen-poor blood to the lungs.",
+
+                source: "Chapter 14 Textbook, p. 384; Chapter 14 Slides, Slide 14-15",
+
+                tip: "Trace the drop of blood: RA -> RV -> Lungs -> LA -> LV -> Body. Pulmonary Arteries and Veins are the exception to the Oxygen rule."
+
+            },
+
+            {
+
+                id: 7,
+
+                type: 'single',
+
+                question: "A patient presents with chest pain. The ECG shows an irregular rhythm with no discernible P waves. The nurse recognizes this dysrhythmia as:",
+
+                options: [
+
+                    "Sinus Bradycardia",
+
+                    "Atrial Fibrillation",
+
+                    "Heart Block",
+
+                    "Ventricular Fibrillation"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Atrial fibrillation is seen in an ECG as the absence of regular P waves or abnormal QRS and T waves; cardiac muscle fibers contract out of step. Ventricular fibrillation is life-threatening and stops blood flow.",
+
+                source: "Chapter 14 Textbook, p. 390; Chapter 14 Slides, Slide 25",
+
+                tip: "No P waves usually indicates the atria are quivering (fibrillating) rather than contracting effectively."
+
+            },
+
+            {
+
+                id: 8,
+
+                type: 'single',
+
+                question: "The nurse is reviewing the physiology of cardiac output. Which formula correctly represents Cardiac Output (CO)?",
+
+                options: [
+
+                    "CO = Heart Rate + Stroke Volume",
+
+                    "CO = Heart Rate x Blood Pressure",
+
+                    "CO = Heart Rate x Stroke Volume",
+
+                    "CO = Stroke Volume / Heart Rate"
+
+                ],
+
+                answer: 2,
+
+                rationale: "Cardiac output is determined by the heart rate (HR) and stroke volume (SV). The relationship is CO = HR x SV.",
+
+                source: "Chapter 14 Textbook, p. 393; Chapter 14 Slides, Slide 29",
+
+                tip: "Output is the total volume per minute. Multiply the speed (HR) by the amount per beat (SV)."
+
+            },
+
+            {
+
+                id: 9,
+
+                type: 'single',
+
+                question: "A patient has a diagnosis of pericarditis. The nurse understands that this condition involves inflammation of:",
+
+                options: [
+
+                    "The inner lining of the heart chambers",
+
+                    "The muscular layer of the heart wall",
+
+                    "The two-layered fibrous sac covering the heart",
+
+                    "The valves of the heart"
+
+                ],
+
+                answer: 2,
+
+                rationale: "Pericarditis is inflammation of the pericardium, the two-layered fibrous sac covering the heart (visceral and parietal layers). Inflammation of the lining is endocarditis; inflammation of the muscle is myocarditis.",
+
+                source: "Chapter 14 Textbook, p. 381; Chapter 14 Slides, Slide 6",
+
+                tip: "Peri- means 'around'. The pericardium is the sack around the heart."
+
+            },
+
+            {
+
+                id: 10,
+
+                type: 'single',
+
+                question: "A patient is experiencing angina pectoris. The nurse understands that this pain is caused by:",
+
+                options: [
+
+                    "Inflammation of the pericardial sac",
+
+                    "Inadequate oxygen supply to the myocardium",
+
+                    "A tear in the aorta",
+
+                    "Failure of the mitral valve to close"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Angina pectoris is chest pain caused by inadequate oxygen to the heart (myocardium). It is often a warning that coronary arteries cannot supply enough blood.",
+
+                source: "Chapter 14 Textbook, p. 386; Chapter 14 Slides, Slide 18",
+
+                tip: "Angina is 'ischemic' pain—the muscle is starving for oxygen."
+
+            },
+
+            {
+
+                id: 11,
+
+                type: 'single',
+
+                question: "Which structure prevents the backflow of blood from the left ventricle into the left atrium during ventricular contraction?",
+
+                options: [
+
+                    "Tricuspid Valve",
+
+                    "Pulmonary Semilunar Valve",
+
+                    "Aortic Semilunar Valve",
+
+                    "Mitral (Bicuspid) Valve"
+
+                ],
+
+                answer: 3,
+
+                rationale: "The Mitral (Bicuspid) valve is the left AV valve. It closes during ventricular systole to prevent blood from flowing back into the left atrium.",
+
+                source: "Chapter 14 Textbook, p. 383; Chapter 14 Slides, Slide 10",
+
+                tip: "AV valves (Mitral/Tricuspid) prevent backflow to Atria. Semilunar valves prevent backflow to Ventricles."
+
+            },
+
+            {
+
+                id: 12,
+
+                type: 'multi',
+
+                question: "The nurse is reviewing an ECG strip. Which of the following correctly identifies the components of a normal ECG tracing? (Select All That Apply)",
+
+                options: [
+
+                    "P wave associated with atrial depolarization",
+
+                    "QRS complex associated with ventricular depolarization",
+
+                    "T wave associated with ventricular repolarization",
+
+                    "U wave associated with atrial repolarization",
+
+                    "P wave associated with ventricular contraction"
+
+                ],
+
+                answer: [0, 1, 2],
+
+                rationale: "The normal ECG has three deflections: P wave (atrial depolarization), QRS complex (ventricular depolarization), and T wave (ventricular repolarization). Atrial repolarization is hidden by the QRS.",
+
+                source: "Chapter 14 Textbook, p. 389; Chapter 14 Slides, Slide 22",
+
+                tip: "P = Atria firing. QRS = Ventricles firing. T = Ventricles recharging."
+
+            },
+
+            {
+
+                id: 13,
+
+                type: 'single',
+
+                question: "A patient's heart rate is 48 beats per minute. The nurse documents this rhythm as:",
+
+                options: [
+
+                    "Tachycardia",
+
+                    "Bradycardia",
+
+                    "Fibrillation",
+
+                    "Sinus Dysrhythmia"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Bradycardia is a slow heart rhythm, defined as less than 60 beats per minute. Tachycardia is greater than 100 beats per minute.",
+
+                source: "Chapter 14 Textbook, p. 390; Chapter 14 Slides, Slide 24",
+
+                tip: "Brady is 'slow' (like a sloth). Tachy is 'fast' (like a tachometer)."
+
+            },
+
+            {
+
+                id: 14,
+
+                type: 'single',
+
+                question: "In the event of a Myocardial Infarction (MI), which blood vessels are typically blocked?",
+
+                options: [
+
+                    "Pulmonary Arteries",
+
+                    "Vena Cavae",
+
+                    "Coronary Arteries",
+
+                    "Carotid Arteries"
+
+                ],
+
+                answer: 2,
+
+                rationale: "Blood flows into the heart muscle by way of the coronary arteries. In a myocardial infarction (heart attack), a blood clot plugs some part of a coronary artery, causing tissue death.",
+
+                source: "Chapter 14 Textbook, p. 385; Chapter 14 Slides, Slide 17",
+
+                tip: "The heart needs its own blood supply to function. The coronary arteries provide this."
+
+            },
+
+            {
+
+                id: 15,
+
+                type: 'multi',
+
+                question: "A nurse is teaching a patient about Right-Sided Heart Failure (Cor Pulmonale). Which signs and symptoms should be included in the teaching? (Select All That Apply)",
+
+                options: [
+
+                    "Shortness of breath",
+
+                    "Distended neck veins (JVD)",
+
+                    "Swelling in the feet and ankles (Peripheral Edema)",
+
+                    "Enlarged liver and spleen (Organomegaly)",
+
+                    "Crackles in the lungs"
+
+                ],
+
+                answer: [1, 2, 3],
+
+                rationale: "Right heart failure causes blood to back up into the systemic circulation. Signs include jugular vein distention, peripheral edema, ascites, and organomegaly. SOB and crackles are signs of Left heart failure.",
+
+                source: "Chapter 14 Textbook, p. 394-395; Chapter 14 Slides, Slide 31",
+
+                tip: "Right-sided failure backs up into the Rest of the body (Edema, JVD)."
+
+            },
+
+            {
+
+                id: 16,
+
+                type: 'single',
+
+                question: "Which term describes the contraction phase of the cardiac cycle?",
+
+                options: [
+
+                    "Diastole",
+
+                    "Systole",
+
+                    "Depolarization",
+
+                    "Repolarization"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Contraction of the heart is called systole. Relaxation of the heart is called diastole.",
+
+                source: "Chapter 14 Textbook, p. 383; Chapter 14 Slides, Slide 9",
+
+                tip: "Systole = Squeeze."
+
+            },
+
+            {
+
+                id: 17,
+
+                type: 'single',
+
+                question: "The nurse knows that the visceral pericardium is also known as the:",
+
+                options: [
+
+                    "Endocardium",
+
+                    "Myocardium",
+
+                    "Epicardium",
+
+                    "Parietal Pericardium"
+
+                ],
+
+                answer: 2,
+
+                rationale: "The inner layer of the pericardium is called the visceral pericardium, or epicardium. It covers the heart like an apple skin.",
+
+                source: "Chapter 14 Textbook, p. 381; Chapter 14 Slides, Slide 7",
+
+                tip: "Epi- means upon. The Epicardium sits directly upon the heart muscle."
+
+            },
+
+            {
+
+                id: 18,
+
+                type: 'single',
+
+                question: "What is the primary function of the chordae tendineae?",
+
+                options: [
+
+                    "To generate electrical impulses",
+
+                    "To anchor the AV valve flaps to the ventricular wall",
+
+                    "To pump blood into the aorta",
+
+                    "To prevent friction between pericardial layers"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Chordae tendineae are stringlike structures that attach edges of the AV valves to fingerlike projections of cardiac muscle (papillary muscles) in the wall of the ventricles, preventing the valves from inverting.",
+
+                source: "Chapter 14 Textbook, p. 383; Chapter 14 Slides, Slide 7",
+
+                tip: "Think of them as 'heart strings' holding the valves in place."
+
+            },
+
+            {
+
+                id: 19,
+
+                type: 'single',
+
+                question: "A patient is diagnosed with Heart Block. The nurse explains that this condition typically involves blockage of impulses at which structure?",
+
+                options: [
+
+                    "SA Node",
+
+                    "AV Node",
+
+                    "Mitral Valve",
+
+                    "Coronary Sinus"
+
+                ],
+
+                answer: 1,
+
+                rationale: "In AV node block, impulses are blocked from getting through to the ventricular myocardium, resulting in the ventricles contracting much slower. Complete heart block occurs when P waves do not match up with QRS complexes.",
+
+                source: "Chapter 14 Textbook, p. 389; Chapter 14 Slides, Slide 24",
+
+                tip: "The AV node is the gatekeeper between the atria and ventricles. If it blocks the signal, the ventricles don't get the message."
+
+            },
+
+            {
+
+                id: 20,
+
+                type: 'single',
+
+                question: "The nurse identifies that blood flowing through the Pulmonary Veins is:",
+
+                options: [
+
+                    "Oxygen-poor, moving toward the lungs",
+
+                    "Oxygen-rich, moving toward the left atrium",
+
+                    "Oxygen-poor, moving toward the right atrium",
+
+                    "Oxygen-rich, moving toward the body tissues"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Pulmonary veins carry Oxygen-rich blood from the lungs back to the Left Atrium. This is the only time veins carry oxygenated blood.",
+
+                source: "Chapter 14 Textbook, p. 384; Chapter 14 Slides, Slide 16",
+
+                tip: "Pulmonary veins return to the heart from the 'refill station' (lungs), so they are full of oxygen."
+
+            },
+
+            {
+
+                id: 21,
+
+                type: 'multi',
+
+                question: "A patient is prescribed an anticoagulant (e.g., Warfarin) following a valve replacement. The nurse explains that this medication is used to: (Select All That Apply)",
+
+                options: [
+
+                    "Dissolve existing clots in the coronary arteries",
+
+                    "Prevent clot formation",
+
+                    "Lower blood pressure",
+
+                    "Disrupt the blood clotting mechanism",
+
+                    "Increase the heart rate"
+
+                ],
+
+                answer: [1, 3],
+
+                rationale: "Anticoagulants prevent clot formation by disrupting the blood clotting mechanism. They do not dissolve existing clots (that is TPA) or directly lower BP/HR.",
+
+                source: "Chapter 14 Textbook, p. 394 (Clinical Application Box)",
+
+                tip: "Anti-coagulant means 'against clotting'. Prevention is the goal."
+
+            },
+
+            {
+
+                id: 22,
+
+                type: 'single',
+
+                question: "Which diagnostic test involves injecting a radiopaque dye to visualize the coronary arteries?",
+
+                options: [
+
+                    "Electrocardiogram (ECG)",
+
+                    "Echocardiogram",
+
+                    "Angiography",
+
+                    "Chest X-ray"
+
+                ],
+
+                answer: 2,
+
+                rationale: "Angiography is a special type of radiography where dye is injected into an artery to visualize vessels. An angiogram of the coronary arteries is an arteriogram.",
+
+                source: "Chapter 14 Textbook, p. 386 (Clinical Application Box)",
+
+                tip: "Angio- refers to vessels. Graphy refers to visualization."
+
+            },
+
+            {
+
+                id: 23,
+
+                type: 'single',
+
+                question: "The nurse understands that the sympathetic nervous system affects the heart by:",
+
+                options: [
+
+                    "Decreasing the heart rate via the Vagus nerve",
+
+                    "Releasing Acetylcholine to slow conduction",
+
+                    "Increasing the heart rate and strength of contraction",
+
+                    "Having no effect on cardiac output"
+
+                ],
+
+                answer: 2,
+
+                rationale: "The sympathetic division of the ANS increases heart rate via the release of norepinephrine. The parasympathetic division (Vagus nerve) slows the heart rate via acetylcholine.",
+
+                source: "Chapter 14 Textbook, p. 393; Chapter 14 Slides, Slide 27",
+
+                tip: "Sympathetic is 'Fight or Flight'—the heart needs to pump faster and harder."
+
+            },
+
+            {
+
+                id: 24,
+
+                type: 'single',
+
+                question: "Which condition is described as 'hardening of the arteries' due to lipid buildup?",
+
+                options: [
+
+                    "Arteriosclerosis",
+
+                    "Atherosclerosis",
+
+                    "Angina Pectoris",
+
+                    "Cor Pulmonale"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Atherosclerosis is a type of 'hardening of the arteries' in which lipids and other substances build up on the inside wall of blood vessels, potentially blocking blood flow.",
+
+                source: "Chapter 14 Textbook, p. 385; Chapter 14 Slides, Slide 18",
+
+                tip: "Athero- is associated with plaque/lipids."
+
+            },
+
+            {
+
+                id: 25,
+
+                type: 'single',
+
+                question: "A patient is in Ventricular Fibrillation. The nurse anticipates which immediate intervention?",
+
+                options: [
+
+                    "Administration of oral beta-blockers",
+
+                    "Defibrillation (Electric Shock)",
+
+                    "Elective Cardioversion",
+
+                    "Insertion of a pacemaker"
+
+                ],
+
+                answer: 1,
+
+                rationale: "Ventricular fibrillation is immediately life-threatening. It must be corrected immediately by defibrillation (application of electric shock) to force fibers back into rhythm.",
+
+                source: "Chapter 14 Textbook, p. 390-392; Chapter 14 Slides, Slide 25",
+
+                tip: "V-Fib = De-Fib. It's a lethal rhythm requiring shock."
+
+            }
+
+        ];
+
+
+
+        // Fisher-Yates Shuffle function
+
+        function shuffleArray(array) {
+
+            for (let i = array.length - 1; i > 0; i--) {
+
+                const j = Math.floor(Math.random() * (i + 1));
+
+                [array[i], array[j]] = [array[j], array[i]];
+
+            }
+
+        }
+
+
+
+        let currentQuestionIndex = 0;
+
+        let score = 0;
+
+        let missedQuestions = [];
+
+
+
+        const quizContainer = document.getElementById('quiz-container');
+
+        const questionCounterEl = document.getElementById('question-counter');
+
+        const questionTextEl = document.getElementById('question-text');
+
+        const optionsContainerEl = document.getElementById('options-container');
+
+        const feedbackEl = document.getElementById('feedback');
+
+        const feedbackTitleEl = document.getElementById('feedback-title');
+
+        const feedbackRationaleEl = document.getElementById('feedback-rationale');
+
+        const feedbackSourceEl = document.getElementById('feedback-source');
+
+        const testTipContainer = document.getElementById('test-tip-container');
+
+        const submitBtn = document.getElementById('submit-btn');
+
+        const nextBtn = document.getElementById('next-btn');
+
+        const resultsContainer = document.getElementById('results-container');
+
+        const scoreCircleEl = document.getElementById('score-circle');
+
+        const resultMessageEl = document.getElementById('result-message');
+
+        const retakeAllBtn = document.getElementById('retake-all-btn');
+
+        const retakeMissedBtn = document.getElementById('retake-missed-btn');
+
+        const progressFillEl = document.getElementById('progress-fill');
+
+
+
+        // Initial Shuffle
+
+        shuffleArray(quizData);
+
+
+
+        function loadQuestion() {
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            const isMulti = currentQuestion.type === 'multi';
+
+
+
+            // Update progress
+
+            const progress = ((currentQuestionIndex) / quizData.length) * 100;
+
+            progressFillEl.style.width = `${progress}%`;
+
+
+
+            questionCounterEl.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+
+            questionTextEl.textContent = currentQuestion.question;
+
+
+
+            optionsContainerEl.innerHTML = '';
+
+
+
+            if(isMulti) {
+
+                const hint = document.createElement('span');
+
+                hint.className = 'sata-instruction';
+
+                hint.textContent = "Select All That Apply";
+
+                optionsContainerEl.appendChild(hint);
+
+            }
+
+
+
+            currentQuestion.options.forEach((option, index) => {
+
+                const optionItem = document.createElement('div');
+
+                optionItem.className = 'option-item';
+
+
+
+                const inputType = isMulti ? 'checkbox' : 'radio';
+
+                const inputId = `option${index}`;
+
+
+
+                optionItem.innerHTML = `
+
+                    <label for="${inputId}" class="option-label">
+
+                        <input type="${inputType}" id="${inputId}" name="option" value="${index}">
+
+                        <span>${option}</span>
+
+                    </label>
+
+                `;
+
+                optionsContainerEl.appendChild(optionItem);
+
+            });
+
+
+
+            // Add listeners
+
+            const inputs = optionsContainerEl.querySelectorAll('input');
+
+            inputs.forEach(input => {
+
+                input.addEventListener('change', () => {
+
+                    // Visual selection style
+
+                    if (!isMulti) {
+
+                        // clear all selected styles
+
+                        optionsContainerEl.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+
+                    }
+
+
+
+                    if (input.checked) {
+
+                        input.parentElement.classList.add('selected');
+
+                    } else {
+
+                        input.parentElement.classList.remove('selected');
+
+                    }
+
+
+
+                    // Enable submit button if at least one checked
+
+                    const anyChecked = Array.from(inputs).some(i => i.checked);
+
+                    submitBtn.disabled = !anyChecked;
+
+                });
+
+            });
+
+
+
+            feedbackEl.classList.add('hidden');
+
+            submitBtn.classList.remove('hidden');
+
+            submitBtn.disabled = true;
+
+            nextBtn.classList.add('hidden');
+
+        }
+
+
+
+        function checkAnswer() {
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            const isMulti = currentQuestion.type === 'multi';
+
+            const inputs = optionsContainerEl.querySelectorAll('input');
+
+
+
+            let isCorrect = false;
+
+            let userSelectedIndices = [];
+
+
+
+            inputs.forEach(input => {
+
+                if (input.checked) userSelectedIndices.push(parseInt(input.value));
+
+                input.disabled = true; // Disable inputs
+
+            });
+
+
+
+            if (isMulti) {
+
+                const correctIndices = currentQuestion.answer.sort();
+
+                userSelectedIndices.sort();
+
+                isCorrect = (correctIndices.length === userSelectedIndices.length) &&
+
+                            correctIndices.every((val, index) => val === userSelectedIndices[index]);
+
+            } else {
+
+                isCorrect = userSelectedIndices[0] === currentQuestion.answer;
+
+            }
+
+
+
+            // Styling Feedback
+
+            const labels = optionsContainerEl.querySelectorAll('.option-label');
+
+            labels.forEach((label, index) => {
+
+                label.classList.remove('selected'); // Remove selection blue
+
+
+
+                const isAnswerCorrect = isMulti ? currentQuestion.answer.includes(index) : index === currentQuestion.answer;
+
+                const wasSelected = userSelectedIndices.includes(index);
+
+
+
+                if (isAnswerCorrect) {
+
+                    label.classList.add('correct-answer'); // Green
+
+                    if (!wasSelected) label.classList.add('missed-answer');
+
+                } else if (wasSelected) {
+
+                    label.classList.add('wrong-answer'); // Red
+
+                }
+
+            });
+
+
+
+            if (isCorrect) {
+
+                score++;
+
+                feedbackTitleEl.textContent = "Correct!";
+
+                feedbackTitleEl.className = "feedback-correct";
+
+            } else {
+
+                missedQuestions.push(currentQuestion);
+
+                feedbackTitleEl.textContent = "Incorrect";
+
+                feedbackTitleEl.className = "feedback-incorrect";
+
+            }
+
+
+
+            feedbackRationaleEl.textContent = currentQuestion.rationale;
+
+            feedbackSourceEl.textContent = `Source: ${currentQuestion.source}`;
+
+            
+
+            // Test Tip
+
+            testTipContainer.innerHTML = '';
+
+            if(currentQuestion.tip) {
+
+                const tipDiv = document.createElement('div');
+
+                tipDiv.className = 'test-tip';
+
+                tipDiv.textContent = `💡 Exam Tip: ${currentQuestion.tip}`;
+
+                testTipContainer.appendChild(tipDiv);
+
+            }
+
+
+
+            feedbackEl.classList.remove('hidden');
+
+            submitBtn.classList.add('hidden');
+
+            nextBtn.classList.remove('hidden');
+
+
+
+            // Scroll to feedback
+
+            feedbackEl.scrollIntoView({ behavior: 'smooth' });
+
+        }
+
+
+
+        function nextQuestion() {
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < quizData.length) {
+
+                loadQuestion();
+
+                quizContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } else {
+
+                showResults();
+
+            }
+
+        }
+
+
+
+        function showResults() {
+
+            quizContainer.querySelector('#question-area').classList.add('hidden');
+
+            feedbackEl.classList.add('hidden');
+
+            document.getElementById('navigation').classList.add('hidden');
+
+
+
+            const percentage = Math.round((score / quizData.length) * 100);
+
+            scoreCircleEl.textContent = `${percentage}%`;
+
+
+
+            let msg = "";
+
+            if (percentage >= 80) msg = "Excellent work! You are ready for the Chapter 14 exam.";
+
+            else if (percentage >= 60) msg = "Good job, but review the missed concepts in the textbook.";
+
+            else msg = "Keep studying. Focus on the anatomy and blood flow sections.";
+
+
+
+            resultMessageEl.textContent = msg;
+
+            resultsContainer.classList.remove('hidden');
+
+
+
+            if (missedQuestions.length === 0) {
+
+                retakeMissedBtn.classList.add('hidden');
+
+            } else {
+
+                retakeMissedBtn.classList.remove('hidden');
+
+            }
+
+        }
+
+
+
+        submitBtn.addEventListener('click', checkAnswer);
+
+        nextBtn.addEventListener('click', nextQuestion);
+
+
+
+        retakeAllBtn.addEventListener('click', () => {
+
+            location.reload();
+
+        });
+
+
+
+        retakeMissedBtn.addEventListener('click', () => {
+
+            if (missedQuestions.length > 0) {
+
+                quizData.length = 0;
+
+                missedQuestions.forEach(q => quizData.push(q));
+
+                
+
+                // Shuffle missed
+
+                shuffleArray(quizData);
+
+
+
+                currentQuestionIndex = 0;
+
+                score = 0;
+
+                missedQuestions = [];
+
+
+
+                resultsContainer.classList.add('hidden');
+
+                document.getElementById('question-area').classList.remove('hidden');
+
+                document.getElementById('navigation').classList.remove('hidden');
+
+                loadQuestion();
+
+            }
+
+        });
+
+
+
+        // Initialize
+
+        loadQuestion();
+
+    </script>
+
+</body>
+
+</html>
+
+[INSERT CHAPTER NUMBER HERE]
+
+Instructions:
+Upload your textbook into Gemini Pro
+Set Tools to “Canvas”
+Set Model to 3.0 (Thinking)
+Copy and paste the template into Gemini Pro
+Specify the chapter number on the template as “Chapter # Only”  at the bottom
+Hit “Enter”
